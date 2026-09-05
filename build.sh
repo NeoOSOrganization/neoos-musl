@@ -18,6 +18,9 @@ fi
 echo "Building musl with NeoOS shim..."
 mkdir -p "$PREFIX"
 
+echo "Integrating NeoOS syscall shim..."
+MUSL_DIR="$(cd "$UPSTREAM_DIR" && pwd)" "$KERNEL_SHIM_DIR/apply.sh"
+
 cd "$UPSTREAM_DIR"
 
 if [ ! -f "configure" ]; then
@@ -28,20 +31,15 @@ fi
 echo "Configuring musl..."
 ./configure \
     --prefix="$(cd .. && pwd)/$PREFIX" \
-    --target=x86_64-elf \
+    --target=x86_64 \
     --disable-shared \
-    --enable-static \
-    CC=x86_64-elf-gcc \
-    CFLAGS="-O2 -march=x86-64" 2>&1 | tail -5
-
-echo "Integrating NeoOS syscall shim..."
-if [ -d "$KERNEL_SHIM_DIR" ]; then
-    cp "$KERNEL_SHIM_DIR"/*.h arch/x86_64/bits/ 2>/dev/null || true
-    echo "  OK Shim integrated into arch/x86_64/bits/"
-fi
+    CC="${CC:-x86_64-elf-gcc}" \
+    AR="${AR:-x86_64-elf-ar}" \
+    RANLIB="${RANLIB:-x86_64-elf-ranlib}" \
+    CFLAGS="-mcmodel=large -fno-pic -mno-red-zone -O2" 2>&1 | tail -5
 
 echo "Building musl..."
-make -j4
+make -j"$(nproc)"
 echo "  OK Build complete"
 
 echo "Installing musl to $PREFIX..."
