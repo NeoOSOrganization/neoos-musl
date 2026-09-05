@@ -23,13 +23,18 @@ The NeoOS shim (in neoos-kernel) translates Linux syscall numbers to NeoOS sysca
 
 ## Integration
 
-Kernel and ports link against the compiled musl:
+Kernel and ports link against the compiled musl. Headers come from four
+directories (musl splits generic, arch-specific, and generated bits
+apart), isystem'd in this order so arch-specific and generated headers
+win over generic ones:
 
 ```makefile
 MUSL_DIR ?= ../neoos-musl/build-output
 
-CFLAGS += -I$(MUSL_DIR)/include
-LDFLAGS += -L$(MUSL_DIR)/lib -lc
+CFLAGS  += -isystem $(MUSL_DIR)/include -isystem $(MUSL_DIR)/include-arch-x86_64 \
+           -isystem $(MUSL_DIR)/include-arch-generic -isystem $(MUSL_DIR)/include-obj
+LDFLAGS += -L$(MUSL_DIR)/lib -lc -lgcc
+# crt1.o also lives in $(MUSL_DIR)/lib and must be linked explicitly
 ```
 
 ## Documentation
