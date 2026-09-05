@@ -1,0 +1,11 @@
+build-output/
+*.o
+*.a
+*.so
+
+.idea/
+.vscode/
+*.swp
+
+.DS_Store
+Thumbs.db
