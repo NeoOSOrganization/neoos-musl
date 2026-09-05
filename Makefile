@@ -11,8 +11,12 @@ KERNEL_SHIM_DIR ?= ../neoos-kernel/third_party/shim
 UPSTREAM_DIR    ?= upstream
 PREFIX          ?= build-output
 CROSS_DIR       ?= $(HOME)/opt/cross-x86_64-elf/bin
-CC              ?= $(CROSS_DIR)/x86_64-elf-gcc
-AR              ?= $(CROSS_DIR)/x86_64-elf-ar
+# Plain `=`, not `?=`: Make predefines CC and AR from its built-in
+# rules, so a conditional assignment silently loses to Make's own
+# "cc"/"ar" defaults instead of picking up the cross-compiler. A
+# command-line override (`make CC=...`) still wins over either form.
+CC              = $(CROSS_DIR)/x86_64-elf-gcc
+AR              = $(CROSS_DIR)/x86_64-elf-ar
 RANLIB          ?= $(CROSS_DIR)/x86_64-elf-ranlib
 
 MUSL_LIB     := $(UPSTREAM_DIR)/lib/libc.a
